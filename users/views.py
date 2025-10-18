@@ -113,19 +113,13 @@ class RegisterView(generics.ListCreateAPIView):
                 otp = otp_m.generate_otp()
                 user = serializer.save()
                 user.secret = secret
+                user.is_active = True
                 user.save()
                 
-                print(user, otp)
-                html_content = render_to_string('emails/welcome.html', {'user': user, 'otp': otp})
-                send_welcome_email_async.delay(
-                    from_email='noreply@movbay.com',
-                    to_emails=user.email,
-                    subject='Welcome TO KuNetwork',
-                    html_content=html_content
-                )
-                
-                # ❌ REMOVE THIS LINE - Don't create token here!
-                # token = UserTokenObtainPairSerializer().get_token(user)
+                # print(user, otp)
+                # html_content = render_to_string('emails/welcome.html', {'user': user, 'otp': otp})
+                # sender = EmailManager('noreply@movbay.com', user.email, 'Welcome', html_content)
+                # sender.send_email()
                 
                 return Response({
                     "message": "Registration successful. Please check your email for OTP.",

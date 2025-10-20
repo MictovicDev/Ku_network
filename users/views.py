@@ -178,6 +178,22 @@ class UserProfileUpdateView(APIView):
     """API endpoint for updating user profile and username"""
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
+    
+    
+    
+    def get(self, request):
+        """Retrieve the authenticated user's profile"""
+        try:
+            profile = UserProfile.objects.select_related('user').get(user=request.user)
+            serializer = UserProfileUpdateSerializer(profile)
+            return Response({
+                "message": "success",
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+        except UserProfile.DoesNotExist:
+            return Response({"detail": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request):
         """Partially update profile and username"""

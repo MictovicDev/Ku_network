@@ -6,18 +6,21 @@ from rest_framework.response import Response
 from .serializers import NewsSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.parsers import MultiPartParser, FormParser
+
 
 # Create your views here.
 class NewsListCreateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    # parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
         news_posts = News.objects.all()
-        serializer = NewsSerializer(news_posts, many=True)
+        serializer = NewsSerializer(news_posts, many=True, context={'request': request})
         return Response({'status': 'success', 'data': serializer.data}, status=200)
 
     def post(self, request):
-        serializer = NewsSerializer(data=request.data)
+        serializer = NewsSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save(author=request.user)
             return Response({'status': 'success', 'data': serializer.data}, status=201)
@@ -28,13 +31,15 @@ class NewsListCreateAPIView(APIView):
 
 class NewsDetailAPIView(APIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    # parser_classes = [MultiPartParser, FormParser]  # Add this line
+
 
     def get_object(self, pk):
         return get_object_or_404(News, pk=pk)
 
     def get(self, request, pk):
         news = self.get_object(pk)
-        serializer = NewsSerializer(news)
+        serializer = NewsSerializer(news, context={'request': request})
         return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
@@ -42,12 +47,12 @@ class NewsDetailAPIView(APIView):
         if news.author != request.user:
             return Response({'error': 'You do not have permission to edit this post.'}, status=status.HTTP_403_FORBIDDEN)
 
-        serializer = NewsSerializer(news, data=request.data, partial=True)
+        serializer = NewsSerializer(news, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
         return Response({'status': 'error', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
+        
     def delete(self, request, pk):
         news = self.get_object(pk)
         if news.author != request.user:

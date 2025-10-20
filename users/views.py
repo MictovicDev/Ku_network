@@ -1,10 +1,11 @@
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RegisterSerializer, ActivateAccountSerializer, UserProfileSerializer
+from .serializers import RegisterSerializer, ActivateAccountSerializer
 from django.contrib.auth import get_user_model
 from .serializers import (
-    UserTokenObtainPairSerializer
+    UserTokenObtainPairSerializer,
+    UserProfileUpdateSerializer
 )
 from rest_framework_simplejwt.views import TokenObtainPairView
 from users.utils.otp import OTPManager
@@ -29,9 +30,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from django.contrib.auth import authenticate
-from .tasks import send_welcome_email_async
-
+# from django.contrib.auth import authenticate
+# from .tasks import send_welcome_email_async
+from rest_framework.parsers import MultiPartParser, FormParser
+from .models import UserProfile
+from .serializers import UserProfileUpdateSerializer
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -115,6 +118,7 @@ class RegisterView(generics.ListCreateAPIView):
                 user.secret = secret
                 user.is_active = True
                 user.save()
+                UserProfile.objects.create(user=user)
                 return Response({
                     "message": "success",
                     "user": {
@@ -168,56 +172,33 @@ class ActivateAccountView(generics.GenericAPIView):
             return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-class ProfileView(APIView):
+
+
+class UserProfileUpdateView(APIView):
+    """API endpoint for updating user profile and username"""
     permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request):
-        """Retrieve the authenticated user's profile"""
-        try:
-            profile = UserProfile.objects.select_related('user').get(user=request.user)
-            serializer = UserProfileSerializer(profile)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except UserProfile.DoesNotExist:
-            return Response({"detail": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request):
-        """Fully update profile"""
-        try:
-            profile = UserProfile.objects.select_related('user').get(user=request.user)
-            serializer = UserProfileSerializer(profile, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({
-                    "message": "Profile updated successfully",
-                    "data": serializer.data
-                }, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except UserProfile.DoesNotExist:
-            return Response({"detail": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    parser_classes = [MultiPartParser, FormParser]
 
     def patch(self, request):
-        """Partially update profile (PATCH)"""
+        """Partially update profile and username"""
         try:
             profile = UserProfile.objects.select_related('user').get(user=request.user)
-            serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+            serializer = UserProfileUpdateSerializer(profile, data=request.data, partial=True)
+            
             if serializer.is_valid():
                 serializer.save()
                 return Response({
-                    "message": "Profile updated successfully",
+                    "message": "success",
                     "data": serializer.data
                 }, status=status.HTTP_200_OK)
+            
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
         except UserProfile.DoesNotExist:
             return Response({"detail": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        
-      
 
             
 class ForgotPassword(APIView):

@@ -95,40 +95,48 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'phone_number')
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+
+
+# from rest_framework import serializers
+# from .models import UserProfile
+
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for updating both user and profile information"""
     username = serializers.CharField(source='user.username', required=False)
-    # fullname = serializers.CharField(source='user.fullname', required=False)
-    phone_number = serializers.CharField(
-        source='user.phone_number', required=False)
-    address = serializers.CharField(required=False)
-    profile_picture = serializers.ImageField(required=False)
 
     class Meta:
         model = UserProfile
-        fields = ['username', 'fullname',
-                  'phone_number', 'address', 'profile_picture']
+        fields = ['bio', 'image', 'username']
+
+    def validate_username(self, value):
+        """Ensure username is unique and non-empty"""
+        if not value.strip():
+            raise serializers.ValidationError("Username cannot be empty.")
+        if User.objects.filter(username=value).exclude(pk=self.instance.user.pk).exists():
+            raise serializers.ValidationError("This username is already taken.")
+        return value
+
+    def validate_bio(self, value):
+        if value and len(value) < 10:
+            raise serializers.ValidationError("Bio must be at least 10 characters long.")
+        return value
 
     def update(self, instance, validated_data):
-        user_data = validated_data.pop('user', None)
-        instance.address = validated_data.get('address', instance.address)
-        profile_picture = validated_data.pop('profile_picture', None)
+        """Custom update to handle nested user field"""
+        user_data = validated_data.pop('user', {})
+        
+        # Update profile fields
+        instance.bio = validated_data.get('bio', instance.bio)
+        instance.image = validated_data.get('image', instance.image)
         instance.save()
 
-
+        # Update user fields (like username)
         if user_data:
-            print(True)
             user = instance.user
-            model_fields = {f.name for f in user._meta.get_fields()}
-            for attr, value in user_data.items():
-                if attr in model_fields:
-                    print(attr, value)
-                    setattr(user, attr, value)
-            user.save()
+            username = user_data.get('username')
+            if username:
+                user.username = username
+                user.save()
 
-        if profile_picture:
-            # Get raw file bytes and name
-            file_data = profile_picture.read()
-            file_name = profile_picture.name
-        instance.refresh_from_db()
-        instance.user.refresh_from_db()
         return instance

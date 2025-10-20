@@ -229,11 +229,8 @@ class LoginAttempt(models.Model):
 class UserProfile(models.Model):
     """Extended profile information"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    address = models.TextField(blank=True, null=True)
-    city = models.CharField(max_length=100, blank=True)
-    country = models.CharField(max_length=100, blank=True)
-    postal_code = models.CharField(max_length=20, blank=True)
-    
+    bio = models.TextField(blank=True, null=True)  
+    image = models.ImageField(upload_to='profile_pictures', blank=True, null=True)  
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
 

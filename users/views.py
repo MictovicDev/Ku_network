@@ -168,25 +168,54 @@ class ActivateAccountView(generics.GenericAPIView):
             return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-class ProfileView(generics.RetrieveUpdateAPIView):
-    queryset = UserProfile.objects.select_related('user') 
+class ProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = UserProfileSerializer
-    
-    def get_object(self):
-        return self.queryset.get(user=self.request.user)
-    
-    def retrieve(self, request, *args, **kwargs):
-        import json
+
+    def get(self, request):
+        """Retrieve the authenticated user's profile"""
         try:
-            profile = self.get_object()
-            print(profile)
-            serializer = self.get_serializer(profile)
-            print(serializer)
-            # redis_client.set(cache_key, json.dumps(serializer.data), ex=3600)
-            return Response(serializer.data)
+            profile = UserProfile.objects.select_related('user').get(user=request.user)
+            serializer = UserProfileSerializer(profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except UserProfile.DoesNotExist:
+            return Response({"detail": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response(str(e))
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        """Fully update profile"""
+        try:
+            profile = UserProfile.objects.select_related('user').get(user=request.user)
+            serializer = UserProfileSerializer(profile, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    "message": "Profile updated successfully",
+                    "data": serializer.data
+                }, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except UserProfile.DoesNotExist:
+            return Response({"detail": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request):
+        """Partially update profile (PATCH)"""
+        try:
+            profile = UserProfile.objects.select_related('user').get(user=request.user)
+            serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    "message": "Profile updated successfully",
+                    "data": serializer.data
+                }, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except UserProfile.DoesNotExist:
+            return Response({"detail": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
         
       
 

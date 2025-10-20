@@ -115,21 +115,15 @@ class RegisterView(generics.ListCreateAPIView):
                 user.secret = secret
                 user.is_active = True
                 user.save()
-                
-                # print(user, otp)
-                # html_content = render_to_string('emails/welcome.html', {'user': user, 'otp': otp})
-                # sender = EmailManager('noreply@movbay.com', user.email, 'Welcome', html_content)
-                # sender.send_email()
-                
                 return Response({
-                    "message": "Registration successful. Please check your email for OTP.",
+                    "message": "success",
                     "user": {
-                        "username": user.username,
                         "email": user.email,
                         "phone_number": str(user.phone_number),
                     },
                 }, status=status.HTTP_201_CREATED)
             except Exception as e:
+                print(e)
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     

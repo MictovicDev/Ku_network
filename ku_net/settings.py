@@ -2,9 +2,15 @@
 from pathlib import Path
 from datetime import timedelta
 import os
+from dotenv import load_dotenv
+import os
+from pathlib import Path
+
+
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+load_dotenv(BASE_DIR / ".env")
 
 
 
@@ -46,6 +52,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
+    'kyc',
+    'leaderboard',
+    'mining',
+    'news',
+    'referral',
+    'task',
+    'transaction',
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',

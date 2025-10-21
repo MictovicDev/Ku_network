@@ -88,16 +88,20 @@ class ActivateAccountSerializer(serializers.Serializer):
     otp = serializers.CharField(max_length=10)
 
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['image', 'bio']
+
+
 class UserSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
+    profile = UserProfileSerializer()
     
     class Meta:
         model = User
-        fields = ('id', 'username', 'phone_number')
+        fields = ('id', 'username', 'phone_number','profile')
 
-
-# from rest_framework import serializers
-# from .models import UserProfile
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):

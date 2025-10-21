@@ -5,7 +5,6 @@ from users.serializers import UserSerializer
 
 
 
-
 class ReferralSerializer(ModelSerializer):
     referrer = UserSerializer()
     referred_user = UserSerializer()

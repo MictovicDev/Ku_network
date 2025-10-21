@@ -34,7 +34,7 @@ from django.contrib.auth.password_validation import validate_password
 # from .tasks import send_welcome_email_async
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import UserProfile
-from .serializers import UserProfileUpdateSerializer
+from .serializers import UserProfileUpdateSerializer, UserProfileSerializer
 from referral.models import Referral
 from django.shortcuts import get_object_or_404
 
@@ -179,7 +179,7 @@ class ActivateAccountView(generics.GenericAPIView):
             return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-class UserProfileUpdateView(APIView):
+class UserProfileGetUpdateView(APIView):
     """API endpoint for updating user profile and username"""
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -189,7 +189,7 @@ class UserProfileUpdateView(APIView):
         try:
             profile = UserProfile.objects.select_related(
                 'user').get(user=request.user)
-            serializer = UserProfileUpdateSerializer(profile)
+            serializer = UserProfileSerializer(profile)
             return Response({
                 "message": "success",
                 "data": serializer.data

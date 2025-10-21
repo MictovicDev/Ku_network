@@ -188,7 +188,7 @@ class UserProfileGetUpdateView(APIView):
         try:
             profile = UserProfile.objects.select_related(
                 'user').get(user=request.user)
-            serializer = UserProfileGetUpdateSerializer(profile)
+            serializer = UserProfileGetUpdateSerializer(profile, context={"request": request})
             return Response({
                 "message": "success",
                 "data": serializer.data
@@ -203,7 +203,7 @@ class UserProfileGetUpdateView(APIView):
         try:
             profile = UserProfile.objects.select_related(
                 'user').get(user=request.user)
-            serializer = UserProfileUpdateSerializer(
+            serializer = UserProfileGetUpdateSerializer(
                 profile, data=request.data, partial=True)
 
             if serializer.is_valid():

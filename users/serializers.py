@@ -107,7 +107,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserProfileGetUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating both user and profile information"""
     username = serializers.CharField(source='user.username', required=False)
-
+    image = serializers.ImageField()
     class Meta:
         model = UserProfile
         fields = ['bio', 'image', 'username']

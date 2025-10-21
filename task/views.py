@@ -1,6 +1,12 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from .serializers import ClaimTaskSerializer
+from datetime import datetime
+from .models import Task
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
+from ku_token.models import Token
 # Create your views here.
 
 
@@ -9,4 +15,27 @@ class ClaimToken(APIView):
     
     def post(self, request):
         data = request.data
-        serializer = ClaimTokenSerializer(data=data)
+        serializer = ClaimTaskSerializer(data=request.data)
+        if serializer.is_valid():
+            validated_data = serializer.validated_data
+            title = validated_data.get('title')
+            category = validated_data.get('category')
+            task = get_object_or_404(Task, title=title, category=category,is_active=True)
+            claimed_users = task.claimed_users.all()
+            if request.user in claimed_users:
+                return Response({
+                    "success": "false",
+                    "message": "Token Claimed by You"
+                })
+            token = Token.objects.get(owner=request.user)
+            token.total_token += task.reward_tokens
+            token.save()
+            task.claimed_users.add(request.user)
+            return Response({
+                "success": "True",
+                "message": "Token Claimed Successfully"
+            })
+            
+            
+        
+        

@@ -3,6 +3,9 @@ from django.contrib.auth import get_user_model
 
 
 
+User = get_user_model()
+
+
 
 
 
@@ -20,7 +23,7 @@ class Task(models.Model):
     description = models.TextField()
     category = models.CharField(max_length=20, choices=TASK_TYPE_CHOICES)
     reward_tokens = models.DecimalField(max_digits=10, decimal_places=4)
-    
+    claimed_users = models.ManyToManyField(User,blank=True)
     is_active = models.BooleanField(default=True)
     required_action = models.CharField(max_length=255, blank=True)
     

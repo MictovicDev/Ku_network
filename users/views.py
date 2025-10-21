@@ -36,6 +36,7 @@ from .models import UserProfile
 from .serializers import UserProfileGetUpdateSerializer, UserProfileSerializer
 from referral.models import Referral
 from django.shortcuts import get_object_or_404
+from ku_token.models import Token
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -125,6 +126,7 @@ class RegisterView(generics.ListCreateAPIView):
                 if code:
                     Referral.objects.create(referrer=referrer, referred_user=user)
                 UserProfile.objects.create(user=user)
+                Token.objects.create(owner=user, total_token=0)
                 return Response({
                     "message": "success",
                     "user": {

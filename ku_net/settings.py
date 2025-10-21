@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'news',
     'referral',
     'task',
+    'ku_token',
     'transaction',
     'rest_framework',
     'rest_framework_simplejwt',

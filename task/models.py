@@ -3,6 +3,9 @@ from django.contrib.auth import get_user_model
 
 
 
+
+
+
 class Task(models.Model):
     """Tasks for users to complete"""
     TASK_TYPE_CHOICES = [
@@ -15,7 +18,7 @@ class Task(models.Model):
     
     title = models.CharField(max_length=255)
     description = models.TextField()
-    task_type = models.CharField(max_length=20, choices=TASK_TYPE_CHOICES)
+    category = models.CharField(max_length=20, choices=TASK_TYPE_CHOICES)
     reward_tokens = models.DecimalField(max_digits=10, decimal_places=4)
     
     is_active = models.BooleanField(default=True)
@@ -33,30 +36,30 @@ class Task(models.Model):
 
 User = get_user_model()
 
-# Create your models here.
-class UserTask(models.Model):
-    """Track user task completion"""
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('active', 'Active'),
-        ('completed', 'Completed'),
-        ('claimed', 'Claimed'),
-    ]
+# # Create your models here.
+# class UserTask(models.Model):
+#     """Track user task completion"""
+#     STATUS_CHOICES = [
+#         ('pending', 'Pending'),
+#         ('active', 'Active'),
+#         ('completed', 'Completed'),
+#         ('claimed', 'Claimed'),
+#     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_tasks')
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='user_completions')
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_tasks')
+#     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='user_completions')
     
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    started_at = models.DateTimeField(null=True, blank=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
-    claimed_at = models.DateTimeField(null=True, blank=True)
+#     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+#     started_at = models.DateTimeField(null=True, blank=True)
+#     completed_at = models.DateTimeField(null=True, blank=True)
+#     claimed_at = models.DateTimeField(null=True, blank=True)
     
-    proof_url = models.URLField(blank=True, null=True)
-    notes = models.TextField(blank=True)
+#     proof_url = models.URLField(blank=True, null=True)
+#     notes = models.TextField(blank=True)
 
-    class Meta:
-        unique_together = ['user', 'task']
-        ordering = ['-completed_at']
+#     class Meta:
+#         unique_together = ['user', 'task']
+#         ordering = ['-completed_at']
 
-    def __str__(self):
-        return f"{self.user.username} - {self.task.title} - {self.status}"
+#     def __str__(self):
+#         return f"{self.user.username} - {self.task.title} - {self.status}"

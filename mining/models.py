@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from decimal import Decimal
+from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
 
@@ -46,3 +47,7 @@ class MiningSession(models.Model):
             self.tokens_mined = Decimal(str(duration_hours)) * self.mining_speed
             self.save(update_fields=['tokens_mined'])
         return self.tokens_mined
+    
+    
+    
+    

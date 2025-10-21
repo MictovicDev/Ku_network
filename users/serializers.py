@@ -104,7 +104,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 
-class UserProfileUpdateSerializer(serializers.ModelSerializer):
+class UserProfileGetUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating both user and profile information"""
     username = serializers.CharField(source='user.username', required=False)
 

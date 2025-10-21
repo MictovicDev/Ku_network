@@ -7,12 +7,12 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 # Create your models here.
-class ReferralBonus(models.Model):
+class Referral(models.Model):
     """Track referral bonuses"""
     referrer = models.ForeignKey(
         User, 
         on_delete=models.CASCADE, 
-        related_name='referral_bonuses_given'
+        related_name='referral'
     )
     referred_user = models.ForeignKey(
         User, 

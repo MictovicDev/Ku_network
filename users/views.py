@@ -35,10 +35,12 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import UserProfile
 from .serializers import UserProfileUpdateSerializer
+from referral.models import Referral
+from django.shortcuts import get_object_or_404
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
-    
+
 
 class UserTokenView(APIView):
     permission_classes = [AllowAny]
@@ -90,7 +92,7 @@ class UserTokenView(APIView):
 class DeleteAccountView(APIView):
     authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def post(self, request):
         try:
             user = request.user
@@ -99,25 +101,30 @@ class DeleteAccountView(APIView):
             return Response({"Message": "Account Deleted Successfully"}, status=200)
         except Exception as e:
             return Response({"Message": "Error Deleting Account"}, status=400)
-        
+
 
 class RegisterView(generics.ListCreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
     serializer_class = RegisterSerializer
     queryset = User.objects.all()
-    
+
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             try:
                 otp_m = OTPManager()
+                code = serializer.validated_data['code']
+                print(code)
                 secret = otp_m.get_secret()
                 otp = otp_m.generate_otp()
                 user = serializer.save()
                 user.secret = secret
                 user.is_active = True
+                referrer = get_object_or_404(User, referral_code=code)
                 user.save()
+                if code:
+                    Referral.objects.create(referrer=referrer, referred_user=user)
                 UserProfile.objects.create(user=user)
                 return Response({
                     "message": "success",
@@ -130,7 +137,8 @@ class RegisterView(generics.ListCreateAPIView):
                 print(e)
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 class ActivateAccountView(generics.GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = ActivateAccountSerializer
@@ -144,19 +152,18 @@ class ActivateAccountView(generics.GenericAPIView):
 
         try:
             user = User.objects.get(email=email)
-            
+
             if user.is_active:
                 return Response({'message': 'Already Verified, Login'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             user_secret = user.secret
-            
-           
+
             if OTPManager(user_secret).verify_otp(otp_code):
                 user.is_active = True
                 user.save()
-                
+
                 token = UserTokenObtainPairSerializer().get_token(user)
-                
+
                 return Response({
                     'user': user.email,
                     "user_type": user.user_type,
@@ -172,19 +179,16 @@ class ActivateAccountView(generics.GenericAPIView):
             return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-
-
 class UserProfileUpdateView(APIView):
     """API endpoint for updating user profile and username"""
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
-    
-    
-    
+
     def get(self, request):
         """Retrieve the authenticated user's profile"""
         try:
-            profile = UserProfile.objects.select_related('user').get(user=request.user)
+            profile = UserProfile.objects.select_related(
+                'user').get(user=request.user)
             serializer = UserProfileUpdateSerializer(profile)
             return Response({
                 "message": "success",
@@ -198,25 +202,26 @@ class UserProfileUpdateView(APIView):
     def patch(self, request):
         """Partially update profile and username"""
         try:
-            profile = UserProfile.objects.select_related('user').get(user=request.user)
-            serializer = UserProfileUpdateSerializer(profile, data=request.data, partial=True)
-            
+            profile = UserProfile.objects.select_related(
+                'user').get(user=request.user)
+            serializer = UserProfileUpdateSerializer(
+                profile, data=request.data, partial=True)
+
             if serializer.is_valid():
                 serializer.save()
                 return Response({
                     "message": "success",
                     "data": serializer.data
                 }, status=status.HTTP_200_OK)
-            
+
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
         except UserProfile.DoesNotExist:
             return Response({"detail": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-            
 class ForgotPassword(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -236,10 +241,6 @@ class ForgotPassword(APIView):
         user.set_password(new_password)
         user.save()
         return Response({"detail": "Password updated successfully"}, status=status.HTTP_200_OK)
-        
-        
-        
-    
 
 
 class ChangePasswordView(APIView):

@@ -18,11 +18,12 @@ class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True)
+    code = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = User
         fields = ('email', 'phone_number', 'password',
-                  'password2')
+                  'password2', 'code')
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -89,12 +90,10 @@ class ActivateAccountSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
-
+    
     class Meta:
         model = User
         fields = ('id', 'username', 'phone_number')
-
-
 
 
 # from rest_framework import serializers
@@ -114,18 +113,20 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
         if not value.strip():
             raise serializers.ValidationError("Username cannot be empty.")
         if User.objects.filter(username=value).exclude(pk=self.instance.user.pk).exists():
-            raise serializers.ValidationError("This username is already taken.")
+            raise serializers.ValidationError(
+                "This username is already taken.")
         return value
 
     def validate_bio(self, value):
         if value and len(value) < 10:
-            raise serializers.ValidationError("Bio must be at least 10 characters long.")
+            raise serializers.ValidationError(
+                "Bio must be at least 10 characters long.")
         return value
 
     def update(self, instance, validated_data):
         """Custom update to handle nested user field"""
         user_data = validated_data.pop('user', {})
-        
+
         # Update profile fields
         instance.bio = validated_data.get('bio', instance.bio)
         instance.image = validated_data.get('image', instance.image)

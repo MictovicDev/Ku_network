@@ -4,8 +4,7 @@ from rest_framework import status
 from .serializers import RegisterSerializer, ActivateAccountSerializer
 from django.contrib.auth import get_user_model
 from .serializers import (
-    UserTokenObtainPairSerializer,
-    UserProfileUpdateSerializer
+    UserTokenObtainPairSerializer
 )
 from rest_framework_simplejwt.views import TokenObtainPairView
 from users.utils.otp import OTPManager

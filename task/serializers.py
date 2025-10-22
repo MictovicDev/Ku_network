@@ -7,7 +7,7 @@ class ClaimTaskSerializer(ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ['title', 'category']
+        fields = ['id', 'title', 'category']
 
     def validate(self, attrs):
         title = attrs.get('title')

@@ -20,8 +20,9 @@ class ClaimToken(APIView):
             validated_data = serializer.validated_data
             title = validated_data.get('title')
             category = validated_data.get('category')
+            id = validated_data.get('id')
             task = get_object_or_404(
-                Task, title=title, category=category, is_active=True)
+                Task, title=title, category=category, id=id, is_active=True)
             claimed_users = task.claimed_users.all()
             if request.user in claimed_users:
                 return Response({

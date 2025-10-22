@@ -28,7 +28,7 @@ class ClaimToken(APIView):
                     "success": "false",
                     "message": "Token Claimed by You"
                 })
-            token = Token.objects.get(owner=request.user)
+            token = Token.objects.get(owner=request.user, task=task)
             token.total_token += task.reward_tokens
             token.save()
             task.claimed_users.add(request.user)

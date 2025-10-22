@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .serializers import ClaimTaskSerializer
+from .serializers import ClaimTaskSerializer, TaskSerializer
 from datetime import datetime
 from .models import Task
 from django.shortcuts import get_object_or_404
@@ -12,7 +12,7 @@ from ku_token.models import Token
 
 class ClaimToken(APIView):
     permission_classes = [IsAuthenticated]
-    
+
     def post(self, request):
         data = request.data
         serializer = ClaimTaskSerializer(data=request.data)
@@ -20,7 +20,8 @@ class ClaimToken(APIView):
             validated_data = serializer.validated_data
             title = validated_data.get('title')
             category = validated_data.get('category')
-            task = get_object_or_404(Task, title=title, category=category,is_active=True)
+            task = get_object_or_404(
+                Task, title=title, category=category, is_active=True)
             claimed_users = task.claimed_users.all()
             if request.user in claimed_users:
                 return Response({
@@ -35,7 +36,16 @@ class ClaimToken(APIView):
                 "success": "True",
                 "message": "Token Claimed Successfully"
             })
-            
-            
-        
-        
+
+
+class ListTask(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        task = Task.objects.exclude(claimed_users=request.user)
+        print(task)
+        serializer = TaskSerializer(task, many=True)
+        return Response({
+            "message": "true",
+            "data": serializer.data
+        })

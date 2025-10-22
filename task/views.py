@@ -44,7 +44,7 @@ class ListTask(APIView):
     def get(self, request):
         task = Task.objects.exclude(claimed_users=request.user)
         print(task)
-        serializer = TaskSerializer(task, many=True)
+        serializer = TaskSerializer(task, many=True, context={"request": request})
         return Response({
             "message": "true",
             "data": serializer.data

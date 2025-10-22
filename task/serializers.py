@@ -22,6 +22,7 @@ class ClaimTaskSerializer(ModelSerializer):
 
 
 class TaskSerializer(ModelSerializer):
+    images = serializers.ImageField()
     class Meta:
         model = Task
         exclude = ['claimed_users', 'is_active']

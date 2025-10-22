@@ -26,7 +26,7 @@ class Task(models.Model):
     claimed_users = models.ManyToManyField(User,blank=True)
     is_active = models.BooleanField(default=True)
     required_action = models.CharField(max_length=255, blank=True)
-    
+    images = models.ImageField(upload_to='task/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField(null=True, blank=True)
 

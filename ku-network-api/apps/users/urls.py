@@ -6,6 +6,7 @@ from .views import (
     DeleteAccountView,
     ChangePasswordView,
     UserProfileGetUpdateView,
+    SetInvitationCodeView,
 )
 from django.urls import path
 from rest_framework_simplejwt.views import (
@@ -22,4 +23,9 @@ urlpatterns = [
     path("delete-account/", DeleteAccountView.as_view()),
     path("change-password/", ChangePasswordView.as_view(), name="change-password"),
     path("activate/", ActivateAccountView.as_view(), name="activate-account"),
+    path(
+        "set-invitation-code/",
+        SetInvitationCodeView.as_view(),
+        name="set-invitation-code",
+    ),
 ]

@@ -98,6 +98,13 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("id", "username", "phone_number", "profile")
 
 
+
+class InvitationSerializer(serializers.ModelSerializer):
+    referral_code = serializers.CharField()
+    class Meta:
+        model = User
+        fields = ("referral_code",)
+
 class UserProfileGetUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating both user and profile information"""
 
@@ -107,10 +114,9 @@ class UserProfileGetUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ["bio", "image", "username"]
-        
-        
+
     def get_image(self, obj):
-        request = self.context.get('request')
+        request = self.context.get("request")
         if obj.image:
             return request.build_absolute_uri(obj.image.url)
         return None

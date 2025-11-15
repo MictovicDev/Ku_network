@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RegisterSerializer, ActivateAccountSerializer
+from .serializers import RegisterSerializer, ActivateAccountSerializer, InvitationSerializer
 from django.contrib.auth import get_user_model
 from .serializers import UserTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -125,7 +125,8 @@ class RegisterView(generics.ListCreateAPIView):
                 referrer = get_object_or_404(User, referral_code=code)
                 user.save()
                 if code:
-                    Referral.objects.create(referrer=referrer, referred_user=user)
+                    Referral.objects.create(
+                        referrer=referrer, referred_user=user)
                 UserProfile.objects.create(user=user)
                 Token.objects.create(owner=user, total_token=0)
                 return Response(
@@ -142,6 +143,31 @@ class RegisterView(generics.ListCreateAPIView):
                 print(e)
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SetInvitationCodeView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = InvitationSerializer
+
+    def post(self, request):
+        user = request.user
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            try:
+                print(serializer.validated_data)
+                code = serializer.validated_data.get("code")
+                print(code)
+                user.referral_code = code
+                user.save()
+                return Response({
+                    "status": "success",
+                    "data": serializer.data
+                })
+            except Exception as e:
+                print(e)
+                return Response(
+                    {"status": "failed", "error": "Invalid data"}, status=400
+                )
 
 
 class ActivateAccountView(generics.GenericAPIView):
@@ -204,7 +230,8 @@ class UserProfileGetUpdateView(APIView):
     def get(self, request):
         """Retrieve the authenticated user's profile"""
         try:
-            profile = UserProfile.objects.select_related("user").get(user=request.user)
+            profile = UserProfile.objects.select_related(
+                "user").get(user=request.user)
             serializer = UserProfileGetUpdateSerializer(
                 profile, context={"request": request}
             )
@@ -222,7 +249,8 @@ class UserProfileGetUpdateView(APIView):
     def put(self, request):
         """Partially update profile and username"""
         try:
-            profile = UserProfile.objects.select_related("user").get(user=request.user)
+            profile = UserProfile.objects.select_related(
+                "user").get(user=request.user)
             serializer = UserProfileGetUpdateSerializer(
                 profile, data=request.data, partial=True
             )
@@ -242,7 +270,6 @@ class UserProfileGetUpdateView(APIView):
             )
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class ForgotPassword(APIView):

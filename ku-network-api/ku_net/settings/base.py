@@ -33,18 +33,12 @@ CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
 # Or
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000",
-    "https://ku-network.onrender.com"
-]
+CORS_ALLOWED_ORIGINS = ["http://localhost:8000", "https://ku-network.onrender.com"]
 
 
 STATIC_URL = "/static/"
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:8000",
-    "https://ku-network.onrender.com"
-]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:8000", "https://ku-network.onrender.com"]
 
 # settings.py
 PASSWORD_HASHERS = [
@@ -225,8 +219,6 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
-
-
 
 
 # Default primary key field type

@@ -14,16 +14,13 @@ from apps.ku_token.models import Token
 class ClaimToken(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def post(self, request,pk):
         data = request.data
         serializer = ClaimTaskSerializer(data=request.data)
         if serializer.is_valid():
             validated_data = serializer.validated_data
-            title = validated_data.get("title")
-            category = validated_data.get("category")
-            id = validated_data.get("id")
             task = get_object_or_404(
-                Task, title=title, category=category, id=id, is_active=True
+                Task, id=pk, is_active=True
             )
             claimed_users = task.claimed_users.all()
             if request.user in claimed_users:

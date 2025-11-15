@@ -149,6 +149,14 @@ class SetInvitationCodeView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = InvitationSerializer
 
+    def get(self, request):
+        user = request.user
+        serializer = self.get_serializer(user)
+        return Response({
+            "status": "success",
+            "data": serializer.data
+        })
+
     def post(self, request):
         user = request.user
         serializer = self.get_serializer(data=request.data)

@@ -35,14 +35,15 @@ CORS_ALLOW_ALL_ORIGINS = True  # For development only
 # Or
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
+    "https://ku-network.onrender.com"
 ]
 
 
 STATIC_URL = "/static/"
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:8000"
-    # Add any other domains you want to trust
+    "http://localhost:8000",
+    "https://ku-network.onrender.com"
 ]
 
 # settings.py
@@ -213,9 +214,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# Add this line for Render:
+STATICFILES_DIRS = []
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 

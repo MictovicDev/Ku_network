@@ -219,7 +219,7 @@ class UserProfileGetUpdateView(APIView):
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    def patch(self, request):
+    def put(self, request):
         """Partially update profile and username"""
         try:
             profile = UserProfile.objects.select_related("user").get(user=request.user)
@@ -242,6 +242,7 @@ class UserProfileGetUpdateView(APIView):
             )
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class ForgotPassword(APIView):
